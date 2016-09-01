@@ -1,0 +1,57 @@
+#!/bin/bash
+
+#     _ _  __  __                    _    	  __ _ _      
+#    | (_)/ _|/ _|                  | |   	 / _(_) |     
+#  __| |_| |_| |_ ___ _ __ ___ _ __ | |_  	| |_ _| | ___ 
+# / _` | |  _|  _/ _ \ '__/ _ \ '_ \| __| 	|  _| | |/ _ \
+#| (_| | | | | ||  __/ | |  __/ | | | |_  	| | | | |  __/
+# \__,_|_|_| |_| \___|_|  \___|_| |_|\__| 	|_| |_|_|\___|
+#
+#用于查找两个文件夹中不同的文件
+#
+	
+read -p "Please input first dir:" dir1
+read -p "Please input second dir:" dir2
+read -p "Please input the file suffix(eg: .png):" suffix
+if [[ $suffix == "" ]]; then
+	suffix=".*"
+fi
+cd `dirname $0`
+rm -r differentFileDir
+mkdir differentFileDir
+cd differentFileDir
+file1="${dir1##*/}"_1
+file2="${dir2##*/}"_2
+
+cp -r "$dir1" "$file1"
+cp -r "$dir2" "$file2"
+
+find "$file1" -name "*$suffix" | grep -v ".DS_Store" > "$file1.txt"
+find "$file2" -name "*$suffix" | grep -v ".DS_Store" > "$file2.txt"
+
+function delSame(){
+	cat "$1.txt" | while read line; do
+		rm "$2/${line#*/}"
+	done
+}
+
+delSame "$file1" "$file2"
+delSame "$file2" "$file1"
+
+function cpFile(){
+	mkdir "$1_only"
+	find "$1" -name "*$suffix" | grep -v ".DS_Store" | while read line; do
+		dir=${line%/*}
+		dst="$1_only/${dir#*/}"
+		mkdir -p $dst
+		cp $line $dst
+	done
+}
+
+cpFile "$file1"
+cpFile "$file2"
+
+rm -r "$file1"
+rm -r "$file2"
+rm "$file1.txt"
+rm "$file2.txt"
