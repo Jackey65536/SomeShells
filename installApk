@@ -1,0 +1,25 @@
+#!/bin/bash
+#带着obb安装apk
+
+function install_apk() {
+	while [[ $apk == "" ]]; do
+		read -p "Please input the path of apk：" apk
+	done
+	read -p "Please input the path of obb(unrequire)：" obb
+	if [[ $obb == "" ]]; then
+		adb install -r $apk
+	else
+		tmp1=${obb##*\/}
+		tmp2=${tmp1#*\.}
+		tmp3=${tmp2#*\.}
+		package=${tmp3%\.*}
+		echo $package
+		adb uninstall $package
+		adb install -r $apk
+		obbdir="/sdcard/Android/obb/${package}"
+		adb shell mkdir $obbdir exit
+		adb push $obb $obbdir
+	fi 
+}
+
+install_apk
