@@ -1,0 +1,37 @@
+#!/bin/bash
+# 源脚本文件
+# 目标
+
+while [[ "$ui" == "" ]]; do
+	read -p "Please input dir(eg: /Users/workspace/ui): " ui
+done
+
+read -p "Do you need to update this dir(Y/N):" update
+
+while [[ "$beginTime" == "" ]]; do
+	read -p "Please input begin time(eg: 2016-09-10): " beginTime
+done
+
+while [[ "$endTime" == "" ]]; do
+	read -p "Please input end time(eg: 2016-09-25): " endTime
+done
+
+read -p "Please input dir which to save file: " saveDir
+if [[ "$saveDir" == "" ]]; then
+	saveDir="/Users/$(whoami)/work/HOT_UPDATE/test"
+fi
+
+cd "$ui"
+if [[ "$update" == "Y" || "$update" == "y" ]]; then
+	svn update
+fi
+svn log -qv -r {"$beginTime"}:{"$endTime"} | grep "/${ui##*/}/" |while read line;
+do
+	newline="/test/${line#*/}"
+	tmpdir="${line#*/}"
+	newdir="$saveDir/${tmpdir%/*}"
+	mkdir -p "$newdir"
+	if [[ -f "$newline" ]]; then
+		cp -f "$newline" "$newdir"
+	fi
+done
